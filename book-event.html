@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Book an Event</title>
+    <link rel="stylesheet" href="/styles/style.css">
+</head>
+
+<body>
+    <main>
+        <h1>Book an event</h1>
+        <form method="post" id="bookingForm">
+            <div>
+                <label for="employee-id">Employee Id:</label>
+                <input type="number" name="employee-id" id="employee-id" required>
+            </div>
+            <div id="events">Loading events...</div>
+            <button type="submit" id="bookEvent" disabled>Book Event</button>
+        </form>
+    </main>
+    <script src="/scripts/book-event.js" type="module"></script>
+</body>
+
+</html>
