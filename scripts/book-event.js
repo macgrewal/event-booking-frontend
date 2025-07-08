@@ -1,22 +1,7 @@
-import axios from 'axios';
-
-const API_CONFIG = {
-    BASE_URL: "http://<replace this server prefix>.eu-west-2.compute.amazonaws.com:<replace port number>",
-    AUTH: { username: "<username>", password: "<password>" },
-    HEADERS: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    },
-};
+import bookingService from "./bookingService";
 
 let employeeId = 0;
 let eventId = 0;
-
-const api = axios.create({
-    baseURL: API_CONFIG.BASE_URL,
-    auth: API_CONFIG.AUTH,
-    headers: API_CONFIG.HEADERS,
-});
 
 const eventsContainer = document.getElementById('events');
 const bookingForm = document.getElementById('bookingForm');
@@ -38,9 +23,19 @@ const createEventElement = (event) => {
     return eventDiv;
 };
 
-const loadEvents = async () => {
+const loadEvents = () => {
     try {
-        const { data } = await api.get('/events');
+        const data = {
+            events: [
+                {
+                    id: 1,
+                    name: "Xmas Party",
+                    venue: "Central Park",
+                    date: "2025-12-12",
+                    capacity: 100
+                }
+            ]
+        }
         eventsContainer.innerHTML = ''; // Clear previous events
         if (!data || !data.events || data.events.length === 0) {
             eventsContainer.innerHTML = '<p>No events available at the moment.</p>';
@@ -53,13 +48,6 @@ const loadEvents = async () => {
         });
 
         document.getElementById('bookEvent').disabled = false;
-        document.querySelectorAll('input[name="eventId"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                eventId = Number(e.target.value);
-            });
-        });
-
-
     } catch (err) {
         console.error("Failed to load events:", err);
     }
@@ -68,25 +56,29 @@ const loadEvents = async () => {
 const handleBooking = async (e) => {
     e.preventDefault();
 
+    employeeId = Number(document.querySelector('#employee-id')?.value.trim());
+    eventId = Number(document.querySelector('input[name="eventId"]:checked')?.value);
+
     const bookingData = { employeeId, eventId };
 
     try {
-        const { data } = await api.post('/booking', bookingData);
-        console.log("Booking confirmed:", data);
+        bookingService.addBooking(employeeId, eventId);
+        console.log("Booking confirmed:");
         localStorage.setItem('employeeId', employeeId);
         localStorage.setItem('eventId', eventId);
         bookingForm.reset();
         window.location.href = 'booking-confirmation.html';
     } catch (err) {
         console.error("Booking failed:", err);
-        localStorage.setItem('error', JSON.stringify(err.response.data));
+        const error = {
+            information: err.message,
+            employeeId: employeeId,
+            eventId: eventId
+        };
+        localStorage.setItem('error', JSON.stringify(error));
         window.location.href = 'booking-error.html';
     }
 };
-
-employeeIdInput.addEventListener('input', (e) => {
-    employeeId = Number(e.target.value.trim());
-});
 
 document.addEventListener('DOMContentLoaded', () => {
     loadEvents();
